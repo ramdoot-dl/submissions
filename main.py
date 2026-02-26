@@ -5,21 +5,29 @@ import pandas as pd
 
 # --- 0) Load CSV ---
 from langchain_aws import BedrockEmbeddings
+import boto3
+import botocore
+from langchain_aws import ChatBedrock, ChatBedrockConverse
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_community.utils.math import cosine_similarity
 import os
 import pickle
-import boto3
 import pandas as pd
 import deadlies
-
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Any
 
 CSV_FILE = ""
 EMBEDDING_FILE = ""
 emb_model = BedrockEmbeddings(region_name="us-east-1", model_id = "amazon.titan-embed-text-v2:0")
 BUCKET_NAME = "claimlens-content-storage-uidev2"
 
+@dataclass
+class agent_executor():
+    executor: Any = ""
+
+aex = agent_executor()
 
 @dataclass
 class cols():
@@ -50,6 +58,7 @@ def sanitize_columns():
         c.col_names = ["Claim Number", "Injury Description", "Total Payments", "Total Incurred"]
         c.descr_col = c.col_names[1]
         c.incurred_col = "Total Incurred"
+
 def get_xlsx_std_cols(bucket: str, fname: str):
 
     print("Looking up for xlsx std col names..")
@@ -310,71 +319,66 @@ tools = [
 ]
 
 # --- 3) Configure LLM ---
-import boto3
-import botocore
-from langchain_aws import ChatBedrock
 
+def configure_agent(creds: dict):
+    config = botocore.config.Config(
+        read_timeout=900, connect_timeout=900, retries={"max_attempts": 0}
+    )
+    bedrock_client = boto3.client(
+        service_name="bedrock-runtime", region_name="us-east-1", config=config
+    )
 
-config = botocore.config.Config(
-    read_timeout=900, connect_timeout=900, retries={"max_attempts": 0}
-)
-bedrock_client = boto3.client(
-    service_name="bedrock-runtime", region_name="us-east-1", config=config
-)
+    modelId = 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
+    # modelId = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'
+    # model_id = 'openai.gpt-oss-120b-1:0'
 
-model_id = 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
-# model_id = 'openai.gpt-oss-120b-1:0'
-model_kwargs =  { 
-    "max_tokens": 1500,  # Claude-3 use “max_tokens” However Claud-2 requires “max_tokens_to_sample”.
-    "temperature": 0.0,
-    "top_k": 10,
-    "top_p": 1,
-    # "stop_sequences": ["\n\nHuman"],
-}
+    llm = ChatBedrockConverse(
+        model_id=modelId,
+        region_name="us-east-2",
+        max_tokens=2000,
+        aws_access_key_id=creds["aws_access_key"],
+        aws_secret_access_key=creds["aws_secret_key"],
+        aws_session_token=creds["aws_session_token"],
+    )
 
-llm = ChatBedrock(
-    client=bedrock_client,
-    model_id=model_id,
-    model_kwargs=model_kwargs,
-)
+    # --- 4) Narrow policy/prompt (agent behavior) ---
 
-# --- 4) Narrow policy/prompt (agent behavior) ---
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+    SYSTEM_PROMPT = (
+        "You are a data-focused assistant. "
+        "If a question requires information from the CSV, first use an appropriate tool. "
+        "Use only one tool call per step if possible. "
+        "Don't try to do total count or breakdown of records, use the numbers in the provided output. "
+        "You can provide Sum of Total Incurred if relevant. "
+        "Answer concisely and in a structured way. "
+        "If no tool fits the user query, just respond that you cannot answer, and NEVER list available tools in your response.\n\n"
+        "Available tools:\n{tools}\n"
+        "Use only these tools: {tool_names}."
+    )
 
-SYSTEM_PROMPT = (
-    "You are a data-focused assistant. "
-    "If a question requires information from the CSV, first use an appropriate tool. "
-    "Use only one tool call per step if possible. "
-    "Don't try to do total count or breakdown of records, use the numbers in the provided output. "
-    "You can provide Sum of Total Incurred if relevant. "
-    "Answer concisely and in a structured way. "
-    "If no tool fits the user query, just respond that you cannot answer, and NEVER list available tools in your response.\n\n"
-    "Available tools:\n{tools}\n"
-    "Use only these tools: {tool_names}."
-)
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", SYSTEM_PROMPT),
+            ("human", "{input}"),
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
+        ]
+    )
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", SYSTEM_PROMPT),
-        ("human", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ]
-)
+    _tool_desc = "\n".join(f"- {t.name}: {t.description}" for t in tools)
+    _tool_names = ", ".join(t.name for t in tools)
+    prompt = prompt.partial(tools=_tool_desc, tool_names=_tool_names)
 
-_tool_desc = "\n".join(f"- {t.name}: {t.description}" for t in tools)
-_tool_names = ", ".join(t.name for t in tools)
-prompt = prompt.partial(tools=_tool_desc, tool_names=_tool_names)
+    # --- 5) Create & run tool-calling agent ---
 
-# --- 5) Create & run tool-calling agent ---
-from langchain.agents import create_tool_calling_agent, AgentExecutor
-
-agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
-agent_executor = AgentExecutor(
-    agent=agent,
-    tools=tools,
-    verbose=False,   # optional: True for debug logs
-    max_iterations=3,
-)
+    agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
+    aex.executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        verbose=False,   # optional: True for debug logs
+        max_iterations=3,
+    )
+    
+    return
+    
 
 # --- Public API ---
 def ask_agent(query: str,  use_cat: bool, filename: str) -> str:
@@ -383,7 +387,7 @@ def ask_agent(query: str,  use_cat: bool, filename: str) -> str:
     global df_filtered, df, EMBEDDING_FILE, CSV_FILE, search_cat
     
     df_filtered = pd.DataFrame()
-    
+
     CSV_FILE = filename
     EMBEDDING_FILE = os.path.splitext(CSV_FILE)[0] + ".pickle"
     search_cat = use_cat
@@ -399,7 +403,7 @@ def ask_agent(query: str,  use_cat: bool, filename: str) -> str:
         df = df.rename(columns=cols_map)
         # print(df.columns)
     
-    out = agent_executor.invoke({"input": query})["output"]
+    out = aex.executor.invoke({"input": query})["output"]
     
     return out, df_filtered
 

@@ -152,7 +152,7 @@ def main():
             pages = {
                 "Submission 1": [
                     st.Page("acord.py", title="ACORD application"),
-                    # st.Page("lossrun.py", title="Loss Run"),
+                    st.Page("lossrun.py", title="Loss Run"),
                     st.Page("application.py", title="Supplemental application"),
                         
                 ],

@@ -1,6 +1,6 @@
 # app.py
 import streamlit as st
-from main import ask_agent
+from main import ask_agent, configure_agent
 
 import streamlit as st
 import pandas as pd
@@ -19,7 +19,7 @@ st.logo("Doclens_logo.png", size="large")
 
 add_selectbox = st.sidebar.selectbox(
     'Select Loss Run document',
-    (IMAGE, CSV_FILE)
+    (CSV_FILE, IMAGE)
 )
 if add_selectbox == CSV_FILE:
     st.session_state.filename = CSV_FILE
@@ -38,17 +38,6 @@ with tab1:
         with col2:
             st.subheader("Data Preview")
             st.dataframe(df, hide_index=True)
-        # pdf_viewer(IMAGE, zoom_level=1.0)
-        # st.image(IMAGE, caption='Loss Run Data Overview')       
-        # csv_col1, csv_col2 = st.columns([6, 2])
-        # with csv_col1:
-        #     st.subheader("Data Preview")
-        #     st.dataframe(df, hide_index=True)
-        # with csv_col2:
-        #     st.subheader("Columns")
-        #     # st.write(df.dtypes)
-        #     st.write(df.columns)
-
     elif add_selectbox == CSV_FILE:
         # st.header("CSV Data")
         csv_col1, csv_col2 = st.columns([6, 2])
@@ -103,8 +92,8 @@ with tab2:
             - **`Get records for Liver Transplant and their total paid expenses.`**
         """)
     if add_selectbox == CSV_FILE or add_selectbox == IMAGE:
-        if "csv_messages" not in st.session_state:
-            st.session_state.csv_messages = []
+        if "lr_messages" not in st.session_state:
+            st.session_state.lr_messages = []
         if "dataframes" not in st.session_state:
             st.session_state.dataframes = []
         if custom_text := st.chat_input("Enter your query here..."):
@@ -122,29 +111,22 @@ with tab2:
                  st.markdown(prompt)
             with st.chat_message("assistant"):
                 with st.spinner("Loss Run Agent is orchestrating available tools..."):
+                    configure_agent(st.session_state["aws_credentials"])
                     response, df_filtered = ask_agent(prompt, use_cat, filename=st.session_state.filename)
                 response_text = re.sub(r'\$(.*)\$', r'\$\1\$',response[0]["text"])
                 st.markdown(response_text)
                 st.markdown("***This summary was generated using below filtered data from the document..***")
                 st.dataframe(df_filtered)
                 print(response)
-                st.session_state.csv_messages.append({"role": "assistant", "content": response_text, "dataframe": df_filtered})
+                st.session_state.lr_messages.append({"role": "assistant", "content": response_text, "dataframe": df_filtered})
                 # Add user message to chat history
-                st.session_state.csv_messages.append({"role": "user", "content": prompt})
+                st.session_state.lr_messages.append({"role": "user", "content": prompt})
 
-        # Display chat csv_messages from history on app rerun
-        for message in st.session_state.csv_messages[:-2][::-1]:
+        # Display chat lr_messages from history on app rerun
+        for message in st.session_state.lr_messages[:-2][::-1]:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
                 if message["role"] == "assistant":
                     if message["dataframe"]:
                         st.dataframe(message["dataframe"])
- 
-# if st.button("Run Agent", type="primary"):
-#     if not query.strip():
-#         st.warning("Please enter a question.")
-#     else:
-#         with st.spinner("Agent is thinking and calling tools..."):
-#             response = ask_agent(query)
-#         st.subheader("Answer")
-#         st.markdown(response[0]["text"])
+

@@ -5,11 +5,12 @@ import re
 from langchain_aws import ChatBedrockConverse
 
 modelId = 'us.anthropic.claude-3-5-sonnet-20241022-v2:0'
+# modelId = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'
 
 llm = ChatBedrockConverse(
     model_id=modelId,
     region_name="us-east-2",
-    max_tokens=4000,
+    max_tokens=1500,
     aws_access_key_id=st.session_state["aws_credentials"]["aws_access_key"],
     aws_secret_access_key=st.session_state["aws_credentials"]["aws_secret_key"],
     aws_session_token=st.session_state["aws_credentials"]["aws_session_token"],
