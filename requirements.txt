@@ -1,0 +1,5 @@
+streamlit
+streamlit[pdf]
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-aws==0.2.35

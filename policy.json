@@ -1,0 +1,74 @@
+{
+    "form_type": {
+        "name": "ACORD 125 Commercial Insurance Application"},
+    "sections_attached": {
+        "accounts_receivable": {
+            "premium": null
+        },
+        "boiler_machinery": {
+            "premium": null
+        },
+        "business_auto": {
+            "premium": null
+        },
+        "business_owners": {
+            "premium": null
+        },
+        "commercial_general_liability": {
+            "premium": null
+        },
+        "crime_miscellaneous": {
+            "premium": null
+        },
+        "dealers": {
+            "premium": null
+        },
+        "electronic_data_proc": {
+            "premium": null
+        },
+        "equipment_floater": {
+            "premium": null
+        },
+        "garage_dealers": {
+            "premium": null
+        },
+        "glass_sign": {
+            "premium": null
+        },
+        "installation_builders_risk": {
+            "premium": null
+        },
+        "open_cargo": {
+            "premium": null
+        },
+        "property": {
+            "premium": null
+        },
+        "transportation_motor_truck_cargo": {
+            "premium": null
+        },
+        "truckers_motor_carrier": {
+            "premium": null
+        },
+        "umbrella": {
+            "premium": null
+        },
+        "yacht": {
+            "premium": null
+        }
+    },
+    "policy_information": {
+        "proposed_eff_date": null,
+        "proposed_exp_date": null,
+        "billing_plan": {
+            "direct": null,
+            "agency": null
+        },
+        "payment_plan": null,
+        "method_of_payment": null,
+        "audit": null,
+        "deposit": null,
+        "minimum_premium": null,
+        "policy_premium": null
+    }
+}

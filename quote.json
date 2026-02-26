@@ -1,0 +1,89 @@
+{
+    "coverSheet": {
+        "nameOfAgency": "",
+        "contactName": "",
+        "producer": "",
+        "expirationDate": "",
+        "namedInsured": ""
+    },
+    "quotationRequest": {
+        "producer": "",
+        "effectiveDate": "",
+        "namedInsuredInformation": {
+            "nameOfInsured": "",
+            "address": "",
+            "city": "",
+            "county": "",
+            "state": "",
+            "zip": "",
+            "telephoneNumber": "",
+            "email": "",
+            "website": "",
+            "garagingInformation": {
+                "city": "",
+                "county": "",
+                "state": "",
+                "zip": ""
+            },
+            "businessType": {
+                "individual": false,
+                "partnership": false,
+                "corporation": false,
+                "association": false,
+                "limitedLiabilityCorporation": false
+            },
+            "federalTaxId": "",
+            "yearsInBusiness": "",
+            "yearsExperience": "",
+            "iccPucNumber": ""
+        },
+        "safetyContact": "",
+        "coverages": {
+            "liabilityLimit": "",
+            "uninsuredMotorist": "",
+            "personalInjuryProtection": "",
+            "additionalPIP": "",
+            "underinsuredMotorist": "",
+            "hiredAutoLiability": "",
+            "nonOwnedAuto": "",
+            "numberOfEmployees": "",
+            "specifiedPerils": "",
+            "comprehensive": "",
+            "collision": "",
+            "other": ""
+        }
+    },
+    "vehicleInformation": {
+        "vehicles": [],
+        "drivers": [],
+        "furthestDestination": "",
+        "mostFrequentDestinations": [],
+        "percentageOfUse": {
+            "airport": "",
+            "corporate": "",
+            "wedding": "",
+            "funeral": "",
+            "prom": "",
+            "dinnerShow": "",
+            "other": ""
+        },
+        "mileageAndReceipts": {
+            "proposedCoveragePeriod": {
+                "estimatedMileage": "",
+                "grossReceipts": ""
+            },
+            "currentYear": {
+                "estimatedMileage": "",
+                "grossReceipts": ""
+            },
+            "firstPriorYear": {
+                "estimatedMileage": "",
+                "grossReceipts": ""
+            },
+            "secondPriorYear": {
+                "estimatedMileage": "",
+                "grossReceipts": ""
+            }
+        }
+    }
+}

@@ -1,0 +1,4 @@
+Claim Number,Status,Injury Date,Report Date,Days to Report,Closed Date,Injury Description,Body Part,Diagnosis,Detail Cause,Department,Position Code,Indemnity Payments,Medical Payments,Vocational Payments,Legal Payments,Expense Payments,Total Payments,Case Reserves,Total Incurred
+1,C,05/13/2019,05/15/2019,2,08/28/2019,Strain or injury by Lower back area,Lower back area,Strain,Strain or injury by lifting,NO DEPT,0005,251.43,313.76,0.00,0.00,87.30,652.49,0.00,652.49
+2,C,05/26/2019,05/28/2019,2,07/08/2019,Striking against or stepping on,Left tissue (head),Laceration,Striking against or stepping on stationary object,NO DEPT,0005,0.00,131.86,0.00,0.00,0.00,131.86,0.00,131.86
+3,C,04/09/2019,05/28/2019,49,12/11/2019,Fall slip or trip injury,Lower back area,Multiple physical injuries only,Slipped do not fall,NO DEPT,0005,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
