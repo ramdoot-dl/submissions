@@ -15,6 +15,9 @@ llm = ChatBedrockConverse(
     model_id=modelId,
     region_name="us-east-2",
     max_tokens=4000,
+    aws_access_key_id=st.session_state["aws_credentials"]["aws_access_key"],
+    aws_secret_access_key=st.session_state["aws_credentials"]["aws_secret_key"],
+    aws_session_token=st.session_state["aws_credentials"]["aws_session_token"],
     # temperature=0,
     # additional_model_request_fields={
     #     "thinking": {"type": "enabled", "budget_tokens": 1024},

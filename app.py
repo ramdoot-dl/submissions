@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
-import json
-import os
-# add_logo("logo-blue.png", height=10)
+
 st.markdown("""
 <style>
 
@@ -117,84 +115,69 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
-# st.markdown(
-#     """
-#     <style>
-#         [data-testid="stSidebarHeader"] {
-#             background-image: "DocsLens_WhiteText.svg";
-#             background-repeat: no-repeat;
-#             padding-top: 60px;
-#             background-position: 20px 20px;
-#         }
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
-pages = {
-    "Submission 1": [
-        st.Page("acord.py", title="ACORD application"),
-        st.Page("lossrun.py", title="Loss Run"),
-        st.Page("application.py", title="Supplemental application"),
-             
-    ],
-}
 
-pg = st.navigation(pages)
 
-pg.run()
+def main():
+    try:
+        if "aws_credentials" not in st.session_state:
+            st.session_state["aws_credentials"] = None
 
-# st.sidebar.write("Add Submission")
-uploaded_files = st.sidebar.file_uploader(
-    "Add Submission", accept_multiple_files="directory", type=["csv", "pdf"]
-)
+        if st.session_state["aws_credentials"] is None:
 
-# st.session_state.acord_chat = []
-# for file in uploaded_files:
+            aws_access_key = st.text_input(
+                "Enter AWS Access Key", type="password", key="aws_access_key"
+            )
+            aws_secret_key = st.text_input(
+                "Enter AWS Secret Key", type="password", key="aws_secret_key"
+            )
+            aws_session_token = st.text_input(
+                "Enter AWS Session Token (if applicable)",
+                type="password",
+                key="aws_session_token",
+            )
+
+            if st.button("✅ Save Credentials"):
+                if not aws_access_key or not aws_secret_key:
+                    st.error("Access key and secret key are required")
+                else:
+                    st.session_state["aws_credentials"] = {
+                        "aws_access_key": aws_access_key,
+                        "aws_secret_key": aws_secret_key,
+                        "aws_session_token": aws_session_token,
+                    }
+                    st.success("Credentials saved")
+                    st.rerun()
+
+        if st.session_state["aws_credentials"] is not None:
+            pages = {
+                "Submission 1": [
+                    st.Page("acord.py", title="ACORD application"),
+                    # st.Page("lossrun.py", title="Loss Run"),
+                    st.Page("application.py", title="Supplemental application"),
+                        
+                ],
+            }
+
+            pg = st.navigation(pages)
+
+            pg.run()
+
+    # st.sidebar.write("Add Submission")
+    # uploaded_files = st.sidebar.file_uploader(
+    #     "Add Submission", accept_multiple_files="directory", type=["csv", "pdf"]
+    # )
+
+            # Instructions in sidebar
+            with st.sidebar:
+
+                if st.button("🔄 Change Credentials"):
+                    st.session_state["aws_credentials"] = None
+                    st.rerun()
+
+    except Exception as e:
+        st.error(f"Error capturing AWS credentials: {str(e)}")
+        return
     
-# -----------------------------
-# Init routing state
-# -----------------------------
-# if "page" not in st.session_state:
-#     st.session_state.page = "website_summary"
 
-# -----------------------------
-# Sidebar
-# -----------------------------
-# with st.sidebar:
-#     # st.text_input("Search")
-
-#     # st.markdown("### Overview")
-#     # if st.button("Overview", use_container_width=True):
-#     #     st.session_state.page = "overview"
-
-#     st.markdown("## Business Data")
-#     if st.button("ACORD Application", use_container_width=True):
-#         st.session_state.page = "acord"
-#     if st.button("Supplemental Application", use_container_width=True):
-#         st.session_state.page = "supplemental"
-
-# def acord():
-#     df = pd.read_csv("acord.csv")
-#     st.logo("DocsLens_WhiteText.svg")
-
-#     # pdf_viewer("Acord-125-Commercial-Insurance.pdf", zoom_level=1.0)
-#     # csv_col1, csv_col2 = st.columns(spec=[10, 8], gap="xlarge", width=2000)
-#     tab1, tab2 = st.tabs(["**Document View**", "**Extracted Data**"])
-#     with tab1 :
-#         # st.subheader("Document view")
-#         st.pdf("Acord-125-Commercial-Insurance.pdf", height=600)
-#     with tab2:
-#         st.subheader("Data")
-#         st.write(df)
-# def quote():
-#     with open("quote.json", 'r') as f:
-#         data = json.load(f)
-#     # pdf_viewer("Acord-125-Commercial-Insurance.pdf", zoom_level=1.0)
-#     csv_col1, csv_col2 = st.columns(spec=[10, 8], gap="xlarge", width=2000)
-#     with csv_col1:
-#         st.subheader("Document view**")
-#         st.pdf("Limousine_Quotation_Application_Fleet_fillable.pdf", height=600)
-#     with csv_col2:
-#         st.subheader("Quotation Data")
-#         # st.write(df)
-#         st.json(data)
+if __name__ == "__main__":
+    main()
